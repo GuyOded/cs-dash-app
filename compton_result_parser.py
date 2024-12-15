@@ -3,6 +3,7 @@ import pathlib
 import mca_output
 import plotly.graph_objects as go
 import numpy as np
+import interactive_graph
 
 
 def main():
@@ -19,6 +20,9 @@ def main():
 
     if args.show_graph:
         show_graph(output_file, output_data, args.normalize_time)
+
+    if args.interactive:
+        interactive_graph.show_interactive_graph(output_file, output_data)
 
 
 def build_csv(output_file_path: pathlib.Path, output_data: mca_output.MCAOutput, normalize_time=False):
@@ -50,7 +54,7 @@ def build_argparser() -> argparse.ArgumentParser:
     parser.add_argument("-csv", "--gen-csv", action="store_true", dest="gen_csv", help="Generates csv with columns: Channel, Count from the given output file.", default=False)
     parser.add_argument("-dt", "--normalize-time", action="store_true", dest="normalize_time", default=False, help="If true, all output counts will be normalized by live time.")
     parser.add_argument("-g", "--show-graph", action="store_true", dest="show_graph", default=False, help="Shows count-channel graph for a given file.")
-    parser.add_argument("-s", "--select-roi", action="store_true", dest="")
+    parser.add_argument("-i", "--interactive", action="store_true", dest="interactive", default=False, help="Opens measurement in interactive mode, let's you fit gaussians, select regions and so on")
 
     return parser
 

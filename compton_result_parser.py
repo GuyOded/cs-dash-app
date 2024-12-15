@@ -22,7 +22,8 @@ def main():
         show_graph(output_file, output_data, args.normalize_time)
 
     if args.interactive:
-        interactive_graph.show_interactive_graph(output_file, output_data)
+        graph_interface = interactive_graph.InteractiveGraphInterface(output_data, output_file, args.normalize_time)
+        graph_interface.show_interactive_graph()
 
 
 def build_csv(output_file_path: pathlib.Path, output_data: mca_output.MCAOutput, normalize_time=False):

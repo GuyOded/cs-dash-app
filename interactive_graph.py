@@ -1,7 +1,10 @@
-from dash import Dash, dcc, html, Input, Output, ctx
+from dash import Dash, dcc, html, Input, Output, ctx, no_update
 import plotly.express as px
+import plotly.graph_objects as go
 import pathlib
 import mca_output
+import numpy as np
+import curve_fitter
 
 
 class InteractiveGraphInterface:
@@ -33,19 +36,23 @@ class InteractiveGraphInterface:
                                 html.Span([html.Label("Deviation"), dcc.Input(None, type="number", id="deviation")])
                             ]),
                             html.Button(id="fit", n_clicks=0, children="fit")]),
-            html.Div([html.Label("ROI"), html.Div(id="roi-out", children="[-infinity, infinity]")])
+            html.Div([html.Label("ROI"), html.Div(id="roi-out", children="[-infinity, infinity]")]),
+            html.Div([html.Label("Suggested Fit Coefficient"), html.Div(id="approx-coeff", )])
         ])
 
         self._app.run(debug=True)
 
     def _register_callbacks(self):
         @self._app.callback(Output("roi-out", "children"),
-                Input("mca-output-graph", "selectedData"))
+                            Output("approx-coeff", "children"),
+                            Input("mca-output-graph", "selectedData"))
         def print_selected_region(selected_data):
-            if not selected_data:
-                return
+            if not selected_data or not selected_data["points"]:
+                return "[-infinity, infinity]", "0"
 
-            return f"[{selected_data["points"][0]["pointNumber"]}, {selected_data["points"][-1]["pointNumber"]}]"
+            total_counts_under_curve = sum(self._mca_output.channel_count_list[selected_data["points"][0]["pointIndex"]:selected_data["points"][-1]["pointIndex"]])
+
+            return f"[{selected_data["points"][0]["pointNumber"]}, {selected_data["points"][-1]["pointNumber"]}]", total_counts_under_curve
 
         @self._app.callback(Output("mca-output-graph", "figure"),
                 Input("fit", "n_clicks"),
@@ -56,4 +63,35 @@ class InteractiveGraphInterface:
         def generate_fit(_, selected_roi, coeff, expect, deviation):
             trigger_id = ctx.triggered_id
             if trigger_id != "fit":
-                return
+                return no_update
+
+            xdata = np.arange(len(self._mca_output.channel_count_list))
+            ydata = np.array(self._mca_output.channel_count_list)
+
+            if selected_roi and selected_roi["points"]:
+                xdata = np.arange(selected_roi["points"][0]["pointIndex"], selected_roi["points"][-1]["pointIndex"])
+                ydata = np.array(self._mca_output.channel_count_list[selected_roi["points"][0]["pointIndex"]:selected_roi["points"][-1]["pointIndex"]])
+
+            error = np.sqrt(ydata)
+            (params, errors) = curve_fitter.fit_gaussian_curve(xdata, ydata, guess=[expect, deviation, coeff], y_error=error)
+            print(f"Param values: {params}\nParam errors: {errors}")
+
+            figure = px.scatter(y=self._mca_output.channel_count_list)
+            figure.update_layout(dragmode="select",
+                            selectdirection="h",
+                            xaxis_title=None,
+                            yaxis_title=None)
+
+            expectancy = params[0]
+            std_dev = params[1]
+            coefficient = params[2]
+            fitted_line_y = np.array([curve_fitter.model_gaussian_fit(x, expectancy, std_dev, coefficient) for x in range(len(self._mca_output.channel_count_list))])
+
+            return self.show_curve_over_output_scatter(fitted_line_y)
+
+    def show_curve_over_output_scatter(self, curve_y_data) -> go.Figure:
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(y=self._mca_output.channel_count_list, mode="markers", name="MCA out"))
+        fig.add_trace(go.Scatter(y=curve_y_data, mode="lines", name="Fitted Curve"))
+
+        return fig

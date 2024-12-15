@@ -5,11 +5,10 @@ import mca_output
 
 
 class InteractiveGraphInterface:
-    def __init__(self, mca_output: mca_output.MCAOutput, output_path: pathlib.Path, normalize_time: bool):
+    def __init__(self, mca_output: mca_output.MCAOutput, output_path: pathlib.Path):
         self._app = Dash()
         self._output_file_path = output_path
         self._mca_output = mca_output
-        self._normalize_time = normalize_time
         self._register_callbacks()
 
     def show_interactive_graph(self):

@@ -11,7 +11,7 @@ _DATA_SECTION_END_MARKER = "<<END>>"
 class MCAOutput:
     path: str
     measurement_time: float
-    channel_count_list: list[int]
+    channel_count_list: list[float]
 
 
 def parse_output_file(output_file: str) -> MCAOutput:

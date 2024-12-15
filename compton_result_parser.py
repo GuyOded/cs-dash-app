@@ -22,7 +22,11 @@ def main():
         show_graph(output_file, output_data, args.normalize_time)
 
     if args.interactive:
-        graph_interface = interactive_graph.InteractiveGraphInterface(output_data, output_file, args.normalize_time)
+        normalized_data = output_data
+        if args.normalize_time:
+            normalized_data = mca_output.MCAOutput(output_data.path, output_data.measurement_time, np.array(output_data.channel_count_list) / output_data.measurement_time)
+
+        graph_interface = interactive_graph.InteractiveGraphInterface(normalized_data, output_file)
         graph_interface.show_interactive_graph()
 
 

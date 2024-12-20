@@ -44,7 +44,7 @@ def build_csv(output_file_path: pathlib.Path, output_data: mca_output.MCAOutput,
 def show_graph(output_file_path: pathlib.Path, output_data: mca_output.MCAOutput, normalize_time=False):
     channel_count_list = np.array(output_data.channel_count_list)
     if normalize_time:
-        channel_count_list /= output_data.measurement_time
+        channel_count_list = np.array(channel_count_list, dtype=np.float64) / output_data.measurement_time
 
     fig = go.Figure(
         data=[go.Bar(y=channel_count_list)],

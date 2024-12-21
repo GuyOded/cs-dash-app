@@ -83,7 +83,7 @@ class InteractiveGraphInterface:
                 ydata = np.array(self._mca_output.channel_count_list[selected_roi["points"][0]["pointIndex"]:selected_roi["points"][-1]["pointIndex"]])
 
             y_error = np.sqrt(ydata)
-            (params, params_error) = curve_fitter.fit_gaussian_curve(xdata, ydata, guess=[guess_expect, guess_deviation, guess_coeff], y_error=y_error)
+            (params, params_error) = curve_fitter.ols_fit_gaussian_curve(xdata, ydata, guess=[guess_expect, guess_deviation, guess_coeff], y_error=y_error)
             print(f"Param values: {params}\nParam errors: {params_error}")
 
             figure = px.scatter(y=self._mca_output.channel_count_list)
@@ -113,7 +113,7 @@ class InteractiveGraphInterface:
         return fig
 
     def _calculate_gaussian_curve_values(self, expectancy: float, std_dev: float, coefficient: float):
-        return np.array([curve_fitter.model_gaussian_fit(x, expectancy, std_dev, coefficient) for x in range(len(self._mca_output.channel_count_list))])
+        return np.array([curve_fitter.gaussian_model(x, expectancy, std_dev, coefficient) for x in range(len(self._mca_output.channel_count_list))])
 
     def _save_fit_params_to_json(self, expectancy, deviation, coefficient, expectancy_error, deviation_error, coefficient_error):
         curve_y_values = self._calculate_gaussian_curve_values(expectancy, deviation, coefficient)

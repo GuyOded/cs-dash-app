@@ -27,6 +27,13 @@ def gaussian_model(beta: tuple[float, float, float], x: float):
     return (normalization / np.sqrt(2 * np.pi * deviation**2)) * np.exp(-(x - mean)**2 / (2 * (deviation**2)))
 
 
+def linear_model(beta: tuple[float, float], x: float):
+    free_term = beta[0]
+    slope = beta[1]
+
+    return slope*x + free_term
+
+
 def two_gaussian_sum_model(beta: tuple[float, float, float, float, float, float], x: float):
     mean1, deviation1, normalization1, mean2, deviation2, normalization2 = beta
 
@@ -39,6 +46,10 @@ def gaussian_sum_model(beta: list[float], x: float):
 
     gaussian_params_list = [GaussianFittingParameters(beta[i], beta[i+1], beta[i+2]) for i in range(0, len(beta), 3)]
     return np.array([gaussian_model([gaussian_params.mean, gaussian_params.std_dev, gaussian_params.normalization], x) for gaussian_params in gaussian_params_list]).sum(axis=0)
+
+
+def vectorized_line(free_term: float, slope: float):
+    return np.vectorize(lambda x: linear_model([free_term, slope], x))
 
 
 def vectorized_gaussian(mean, deviation, normalization):
@@ -86,7 +97,7 @@ def odr_fit_gaussian_sum(model_data: ModelData, guess: list[GaussianFittingParam
     return fit_params_list, std_dev_list, chi_sq, p_value
 
 
-def odr_fit(model_data: ModelData, model_func: typing.Callable[[list[float], float], float], guess: list[float]) -> tuple[list[float], list[float], float, list[float]]:
+def odr_fit(model_data: ModelData, model_func: typing.Callable[[list[float], float], float], guess: list[float]) -> tuple[list[float], list[float], float, float]:
     model = odr.Model(model_func)
     data = odr.Data(model_data.x_data, model_data.y_data, wd=1/np.power(model_data.x_error, 2), we=1/np.power(model_data.y_error, 2))
 
@@ -94,6 +105,6 @@ def odr_fit(model_data: ModelData, model_func: typing.Callable[[list[float], flo
     output = odr_runner.run()
     degrees_of_freedom = len(model_data.x_data) - len(guess)
 
-    p_values = 1 - stats.chi2.cdf(output.res_var, degrees_of_freedom)
+    p_value = 1 - stats.chi2.cdf(output.res_var, degrees_of_freedom)
 
-    return (output.beta, output.sd_beta, output.res_var, p_values)
+    return (output.beta, output.sd_beta, output.res_var, p_value)

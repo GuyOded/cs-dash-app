@@ -54,6 +54,13 @@ def gaussian_sum_model(beta: list[float], x: float):
     return np.array([gaussian_model([gaussian_params.mean, gaussian_params.std_dev, gaussian_params.normalization], x) for gaussian_params in gaussian_params_list]).sum(axis=0)
 
 
+def klein_nishina_model(beta: tuple[float, float], x: float):
+    electron_radius, compton_wave_length = beta
+    angle_cosine = np.cos(np.deg2rad(x))
+    return (electron_radius**2 / 2) * ((1 + angle_cosine**2) / (1 + compton_wave_length*(1 - angle_cosine))**2) * \
+    (1 + ((compton_wave_length*(1 - angle_cosine))**2) / ((1 + angle_cosine**2)*(1 + compton_wave_length*(1 - angle_cosine))))
+
+
 def vectorized_line(free_term: float, slope: float):
     return np.vectorize(lambda x: linear_model([free_term, slope], x))
 
@@ -74,6 +81,10 @@ def vectorized_gaussian_sum(gaussian_parameters: list[GaussianFittingParameters]
 
 def vectorized_efficiency_model(fit_params: tuple[float, float, float]):
     return np.vectorize(lambda x: efficiency_model(fit_params, x))
+
+
+def vectorized_klein_nishina_model(params: tuple[float, float]):
+    return np.vectorize(lambda x: klein_nishina_model(params, x))
 
 
 def ols_fit_gaussian_curve(x_data, y_data, guess=None, y_error=None) -> tuple[list, list]:
@@ -109,6 +120,10 @@ def odr_fit_gaussian_sum(model_data: ModelData, guess: list[GaussianFittingParam
 
 def odr_fit_efficiency(model_data: ModelData, guess: tuple[float, float, float]) -> tuple[tuple[float, float, float], tuple[float, float, float], float, float]:
     return odr_fit(model_data, efficiency_model, guess)
+
+
+def odr_fit_klein_nishina(model_data: ModelData, guess: tuple[float, float]) -> tuple[tuple[float, float], tuple[float, float], float, float]:
+    return odr_fit(model_data, klein_nishina_model, guess)
 
 
 def odr_fit(model_data: ModelData, model_func: typing.Callable[[list[float], float], float], guess: list[float]) -> tuple[list[float], list[float], float, float]:

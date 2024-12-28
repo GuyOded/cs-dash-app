@@ -27,6 +27,12 @@ def gaussian_model(beta: tuple[float, float, float], x: float):
     return (normalization / np.sqrt(2 * np.pi * deviation**2)) * np.exp(-(x - mean)**2 / (2 * (deviation**2)))
 
 
+def efficiency_model(beta: tuple[float, float], x: float):
+    linear, squared = beta
+
+    return (linear / x) + (squared / x**2)
+
+
 def linear_model(beta: tuple[float, float], x: float):
     free_term = beta[0]
     slope = beta[1]
@@ -66,6 +72,10 @@ def vectorized_gaussian_sum(gaussian_parameters: list[GaussianFittingParameters]
     return np.vectorize(lambda x: gaussian_sum_model(flattened_params, x))
 
 
+def vectorized_efficiency_model(fit_params: tuple[float, float]):
+    return np.vectorize(lambda x: efficiency_model(fit_params, x))
+
+
 def ols_fit_gaussian_curve(x_data, y_data, guess=None, y_error=None) -> tuple[list, list]:
     """
     Fits a gaussian curve with least squares
@@ -95,6 +105,10 @@ def odr_fit_gaussian_sum(model_data: ModelData, guess: list[GaussianFittingParam
     std_dev_list = [(std_dev[i], std_dev[i+1], std_dev[i+2]) for i in range(0, len(std_dev), 3)]
 
     return fit_params_list, std_dev_list, chi_sq, p_value
+
+
+def odr_fit_efficiency(model_data: ModelData, guess: tuple[float, float]) -> tuple[tuple[float, float], tuple[float, float], float, float]:
+    return odr_fit(model_data, efficiency_model, guess)
 
 
 def odr_fit(model_data: ModelData, model_func: typing.Callable[[list[float], float], float], guess: list[float]) -> tuple[list[float], list[float], float, float]:

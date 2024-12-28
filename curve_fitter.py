@@ -27,10 +27,10 @@ def gaussian_model(beta: tuple[float, float, float], x: float):
     return (normalization / np.sqrt(2 * np.pi * deviation**2)) * np.exp(-(x - mean)**2 / (2 * (deviation**2)))
 
 
-def efficiency_model(beta: tuple[float, float], x: float):
-    linear, squared = beta
+def efficiency_model(beta: tuple[float, float, float], x: float):
+    translate, linear, squared = beta
 
-    return (linear / x) + (squared / x**2)
+    return translate + (linear / x) + (squared / x**2)
 
 
 def linear_model(beta: tuple[float, float], x: float):
@@ -72,7 +72,7 @@ def vectorized_gaussian_sum(gaussian_parameters: list[GaussianFittingParameters]
     return np.vectorize(lambda x: gaussian_sum_model(flattened_params, x))
 
 
-def vectorized_efficiency_model(fit_params: tuple[float, float]):
+def vectorized_efficiency_model(fit_params: tuple[float, float, float]):
     return np.vectorize(lambda x: efficiency_model(fit_params, x))
 
 
@@ -107,7 +107,7 @@ def odr_fit_gaussian_sum(model_data: ModelData, guess: list[GaussianFittingParam
     return fit_params_list, std_dev_list, chi_sq, p_value
 
 
-def odr_fit_efficiency(model_data: ModelData, guess: tuple[float, float]) -> tuple[tuple[float, float], tuple[float, float], float, float]:
+def odr_fit_efficiency(model_data: ModelData, guess: tuple[float, float, float]) -> tuple[tuple[float, float, float], tuple[float, float, float], float, float]:
     return odr_fit(model_data, efficiency_model, guess)
 
 

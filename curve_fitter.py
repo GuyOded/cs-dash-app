@@ -58,7 +58,7 @@ def klein_nishina_model(beta: tuple[float, float], x: float):
     electron_radius, compton_wave_length = beta
     angle_cosine = np.cos(np.deg2rad(x))
     return (electron_radius**2 / 2) * ((1 + angle_cosine**2) / (1 + compton_wave_length*(1 - angle_cosine))**2) * \
-    (1 + ((compton_wave_length*(1 - angle_cosine))**2) / ((1 + angle_cosine**2)*(1 + compton_wave_length*(1 - angle_cosine))))
+    (1 + (((compton_wave_length*(1 - angle_cosine))**2) / ((1 + angle_cosine**2)*(1 + compton_wave_length*(1 - angle_cosine)))))
 
 
 def vectorized_line(free_term: float, slope: float):

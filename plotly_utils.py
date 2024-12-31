@@ -20,8 +20,8 @@ def generate_scatter_and_line_plot(scatter: np.ndarray, *lines: list[np.ndarray]
 
     return fig
 
-def     generate_scatter_with_x_and_lines_plot(scatter: np.ndarray, scatter_x: np.ndarray, *lines: list[np.ndarray], error_y = None):
-    scatter = go.Scatter(y=scatter, x=scatter_x, mode="markers", error_y=dict(type="data", array=error_y, visible=True))
+def generate_scatter_with_x_and_lines_plot(scatter: np.ndarray, scatter_x: np.ndarray, *lines: list[np.ndarray], error_y = None, legend_name="Measurements"):
+    scatter = go.Scatter(y=scatter, x=scatter_x, mode="markers", error_y=dict(type="data", array=error_y, visible=True), name=legend_name)
     lines_graph = [go.Scatter(y=line, mode="lines") for line in lines]
     fig = go.Figure(data=[scatter] + lines_graph)
 

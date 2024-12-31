@@ -19,7 +19,7 @@ def generate_model_data_from_mca_output(mca_output: MCAOutput, normalize_time=Tr
         channel_counts /= mca_output.measurement_time
         channel_count_resolution = 1 / mca_output.measurement_time
 
-    channel_count_uncertainty = np.sqrt(np.full([len(channel_counts)], channel_count_resolution / 3) + channel_counts)
+    channel_count_uncertainty = np.sqrt(np.full([len(channel_counts)], channel_count_resolution / 3) + channel_counts / (mca_output.measurement_time**2))
 
     channel_index = np.arange(len(mca_output.channel_count_list), dtype=np.float32)
     channel_index_uncertainty = np.full([len(channel_index)], 1/np.sqrt(3))
